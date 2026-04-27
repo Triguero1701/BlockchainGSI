@@ -58,16 +58,15 @@ python simulador/simulador.py
 
 ## 💥 Cómo probar el Sistema Antifraude y Hackeos
 
-Si en tu presentación quieres demostrar qué pasa cuando una persona "hackea" tu base de datos centralizada (para engañar en Sanidad y decir que no ha roto la cadena de frío), haz lo siguiente:
+Si en tu presentación quieres demostrar qué pasa cuando una persona "hackea" tu base de datos centralizada (para engañar a Sanidad y decir que no ha roto la cadena de frío), puedes utilizar el script automatizado que hemos preparado:
 
-1. Con los servidores en marcha descargando cajas de sensores, abre una consola DB y conéctate al archivo local de SQLite:
+1. Con los servidores en marcha (Backend y Simulador de sensores), abre una **tercera consola/terminal** (asegúrate de tener el entorno virtual activado con `.\venv\Scripts\activate`).
+2. Ejecuta el script de ataque malicioso:
 ```bash
-sqlite3 backend/trazabilidad.db
+python simular_ataque.py
 ```
-2. Imita a un administrador malicioso modificando de forma manual el registro de una temperatura alarmante y poniendo una temperatura buena:
-```sql
-UPDATE telemetria SET temperatura = 4.5 WHERE temperatura > 7 LIMIT 1;
-```
+*(El script buscará automáticamente en la base de datos Off-Chain un registro con exceso de temperatura y lo modificará en crudo a 4.5 °C para tratar de encubrirlo).*
+
 3. Vuelve a tu **Dashboard y haz clic en "Auditar Integridad"**. El frontal se pondrá rojo sangre informando al momento de que *"La firma criptográfica Blockchain no se corresponde con el valor falsificado en la BD. FRAUDE DETECTADO!"*.
 
 *(Nota: Para limpiar toda la simulación, basta con parar el Servidor Backend **Ctrl+C** y volverlo a ejecutar. Su memoria se auto-limpiará).*

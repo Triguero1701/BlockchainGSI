@@ -27,3 +27,9 @@ Emula los sensores instalados en una flota de transporte refrigerado (`simulador
 El frontal visual interactivo desarrollado en HTML5, CSS Variables y Vanilla JS.
 * A diferencia de otros Dashboards estáticos, este funciona mediante **Long-Polling** pasivo contra el servidor, "dibujando" la cadena en vivo sobre la cartografía de `Leaflet.js` y alertando si la temperatura sale de rango (`>8 °C`).
 * Actúa como centro forense ejecutando llamadas REST (`GET /auditar`) que obligan al Core a re-analizar toda la estructura matemática para buscar discrepancias (simulación de fraudes y hackeos).
+
+### 5. Herramienta de Auditoría y Simulación de Ataques (Opcional)
+Para facilitar la demostración de la inmutabilidad y la respuesta del sistema frente a modificaciones malintencionadas, se incluye el script `simular_ataque.py`.
+* Actúa como un **actor malicioso** que se salta la lógica de la aplicación y accede directamente a la capa de persistencia Off-Chain (base de datos relacional).
+* Modifica sigilosamente los valores de los registros (ej. altera una temperatura alta para encubrir la ruptura de la cadena de frío).
+* Permite poner a prueba la capa *Core Blockchain* en tiempo real durante las auditorías, forzando la detección y localización exacta de los eslabones adulterados.
