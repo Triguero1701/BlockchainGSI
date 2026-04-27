@@ -9,8 +9,10 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 
 // Variables de estado
 let markers = [];
-let routePolyline = L.polyline([], {color: '#58a6ff', weight: 3}).addTo(map);
+let routePolylines = [];
 let knownBlocks = 0;
+
+const ROUTE_COLORS = ['#58a6ff', '#2ea043', '#f2cc60', '#bc8cff', '#ff7b72', '#39c5bb'];
 
 // Elementos del DOM
 const blocksFeed = document.getElementById("blocksFeed");
@@ -38,9 +40,6 @@ async function fetchBlockchain() {
 
 function renderNewBlocks(cadena) {
     blocksFeed.innerHTML = ""; // Recrear
-    
-    // Coordenadas para la polyline
-    let routeCoords = [];
     
     // Renderizamos iterando desde el más nuevo al más viejo
     for(let i = cadena.length - 1; i >= 0; i--) {
@@ -93,44 +92,71 @@ function renderMapPath(cadena) {
     // Limpiamos los markers viejos
     markers.forEach(m => map.removeLayer(m));
     markers = [];
+    routePolylines.forEach(poly => map.removeLayer(poly));
+    routePolylines = [];
     
-    let routeCoords = [];
+    const puntosPorLote = {};
+    let ultimoPunto = null;
     
     cadena.forEach(bloque => {
         if(bloque.index === 0) return; // skip genesis
         
         const p = bloque.payload;
-        routeCoords.push([p.lat, p.lon]);
-        
-        // Determina color si se rompe la cadena de frio (>8 grados)
-        let alertMarker = p.temperatura > 8 || p.temperatura < 4;
-        
-        // Create a custom cirle marker
-        let marker = L.circleMarker([p.lat, p.lon], {
-            radius: 6,
-            fillColor: alertMarker ? "#da3633" : "#58a6ff",
-            color: "#fff",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map);
-        
-        marker.bindPopup(`
-            <b>Bloque #${bloque.index}</b><br>
-            Hash: ${bloque.hash.substring(0,8)}...<br>
-            🌡️ Temp: ${p.temperatura} °C<br>
-            🕒 TS: ${new Date(bloque.timestamp).toLocaleTimeString()}
-        `);
-        
-        markers.push(marker);
+        const lote = p.id_lote || 'SIN_LOTE';
+
+        if (!puntosPorLote[lote]) {
+            puntosPorLote[lote] = [];
+        }
+        puntosPorLote[lote].push({
+            coord: [p.lat, p.lon],
+            temperatura: p.temperatura,
+            bloque
+        });
+
+        ultimoPunto = [p.lat, p.lon];
     });
-    
-    // Refresh polyline
-    routePolyline.setLatLngs(routeCoords);
-    
+
+    const lotes = Object.keys(puntosPorLote).sort();
+
+    lotes.forEach((lote, idx) => {
+        const colorRuta = ROUTE_COLORS[idx % ROUTE_COLORS.length];
+        const puntos = puntosPorLote[lote];
+        const routeCoords = puntos.map(x => x.coord);
+
+        const polyline = L.polyline(routeCoords, {color: colorRuta, weight: 3, opacity: 0.9}).addTo(map);
+        routePolylines.push(polyline);
+
+        puntos.forEach(item => {
+            const p = item.bloque.payload;
+            const b = item.bloque;
+        
+            // Determina color si se rompe la cadena de frio (>8 grados o <4 grados)
+            let alertMarker = p.temperatura > 8 || p.temperatura < 4;
+        
+            let marker = L.circleMarker([p.lat, p.lon], {
+                radius: 6,
+                fillColor: alertMarker ? "#da3633" : colorRuta,
+                color: "#fff",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+        
+            marker.bindPopup(`
+                <b>Bloque #${b.index}</b><br>
+                Lote: ${lote}<br>
+                Hash: ${b.hash.substring(0,8)}...<br>
+                🌡️ Temp: ${p.temperatura} °C<br>
+                🕒 TS: ${new Date(b.timestamp).toLocaleTimeString()}
+            `);
+        
+            markers.push(marker);
+        });
+    });
+
     // Centrar mapa si hay ruta
-    if(routeCoords.length > 0) {
-        map.panTo(routeCoords[routeCoords.length - 1], {animate: true});
+    if(ultimoPunto) {
+        map.panTo(ultimoPunto, {animate: true});
     }
 }
 
