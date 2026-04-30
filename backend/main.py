@@ -23,12 +23,13 @@ def recibir_sensor():
     if not datos:
         return jsonify({"error": "No JSON payload", "status": "error"}), 400
         
-    required_keys = ["id_lote", "lat", "lon", "temperatura", "timestamp"]
+    required_keys = ["numero_viaje", "id_lote", "lat", "lon", "temperatura", "timestamp"]
     if not all(k in datos for k in required_keys):
         return jsonify({"error": "Missing parameters", "status": "error"}), 400
 
     # 1. Almacenar raw en SQLite off-chain
     row_id = insert_telemetria(
+        datos["numero_viaje"],
         datos["id_lote"],
         datos["lat"],
         datos["lon"],
@@ -39,6 +40,7 @@ def recibir_sensor():
     # 2. Crear un payload canónico para el bloque
     block_payload = {
         "db_id": row_id,
+        "numero_viaje": datos["numero_viaje"],
         "id_lote": datos["id_lote"],
         "lat": datos["lat"],
         "lon": datos["lon"],
@@ -71,6 +73,8 @@ def obtener_telemetria():
 
 @app.route('/auditar', methods=['GET'])
 def auditar_integridad():
+    numero_viaje = request.args.get('numero_viaje')
+    
     # 1. Validar la integridad algorítmica de la cadena
     cadena_valida, indice_error = mi_blockchain.validar_cadena()
     if not cadena_valida:
@@ -81,6 +85,11 @@ def auditar_integridad():
 
     # 2. Validar que la BD off-chain no haya sido manipulada
     filas_bd = get_all_telemetria()
+    
+    # Si se nos pide validar un viaje específico, filtramos las filas de la base de datos
+    if numero_viaje and numero_viaje != "ALL":
+        filas_bd = [f for f in filas_bd if f["numero_viaje"] == numero_viaje]
+        
     bloques_por_hash = {b.hash: b for b in mi_blockchain.cadena}
 
     for fila in filas_bd:
@@ -100,6 +109,7 @@ def auditar_integridad():
         try:
             # Tolerancia leve para los double/float traidos de SQLite
             if p.get("db_id") != fila["id"]: raise ValueError("ID dispar")
+            if p.get("numero_viaje") != fila["numero_viaje"]: raise ValueError("Número de viaje modificado")
             if p.get("id_lote") != fila["id_lote"]: raise ValueError("Lote modificado")
             if abs(p.get("lat") - fila["lat"]) > 0.0001: raise ValueError("Latitud alterada")
             if abs(p.get("lon") - fila["lon"]) > 0.0001: raise ValueError("Longitud alterada")

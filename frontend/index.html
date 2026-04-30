@@ -25,6 +25,12 @@
 
             <div class="panel actions">
                 <h2>Cripto-Auditoría</h2>
+                <div style="margin-bottom: 15px;">
+                    <label for="tripSelector" style="font-weight: 500; font-size: 0.9rem; display: block; margin-bottom: 5px; color: #8b949e;">Filtrar y Auditar Viaje:</label>
+                    <select id="tripSelector" style="width: 100%; padding: 8px; border-radius: 6px; background-color: #21262d; color: #c9d1d9; border: 1px solid #30363d;">
+                        <option value="ALL">Todos los viajes</option>
+                    </select>
+                </div>
                 <p class="desc">Haz clic para comprobar en tiempo real que ningún registro off-chain ha sido manipulado ni tergiversado utilizando el núcleo blockchain.</p>
                 <button id="btnAuditar" class="btn primary">🔍 Auditar Integridad</button>
                 <div id="auditResult" class="alert hidden">

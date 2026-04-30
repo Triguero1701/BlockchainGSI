@@ -8,16 +8,19 @@ API_URL = "http://127.0.0.1:5000/sensor"
 
 RUTAS = [
     {
+        "numero_viaje": "VIAJE-001",
         "id_lote": "QUESO_MANCHEGO_001",
         "start": (38.9856, -3.9189),    # Ciudad Real
         "end": (38.9744, -3.3486),      # Membrilla
     },
     {
+        "numero_viaje": "VIAJE-002",
         "id_lote": "QUESO_MANCHEGO_002",
         "start": (38.7597, -3.3841),    # Valdepeñas
         "end": (38.9959, -3.3692),      # Manzanares
     },
     {
+        "numero_viaje": "VIAJE-003",
         "id_lote": "QUESO_MANCHEGO_003",
         "start": (39.0700, -3.6160),    # Daimiel
         "end": (38.8908, -3.7110),      # Almagro
@@ -61,6 +64,7 @@ def crear_envio(config):
     waypoints = obtener_ruta_real(start_lon, start_lat, end_lon, end_lat)
     current_lat, current_lon = waypoints[0]
     return {
+        "numero_viaje": config.get("numero_viaje", "VIAJE-DESC"),
         "id_lote": config["id_lote"],
         "waypoints": waypoints,
         "current_wp_idx": 0,
@@ -108,6 +112,7 @@ def actualizar_temperatura(envio):
 
 def construir_payload(envio, timestamp):
     return {
+        "numero_viaje": envio["numero_viaje"],
         "id_lote": envio["id_lote"],
         "lat": round(envio["lat"], 6),
         "lon": round(envio["lon"], 6),

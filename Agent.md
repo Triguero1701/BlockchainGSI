@@ -22,11 +22,13 @@ Alojada en el backend `backend/database.py`, esta capa utiliza un modelo **híbr
 Emula los sensores instalados en una flota de transporte refrigerado (`simulador/simulador.py`).
 * Realiza peticiones `HTTP POST` enviando objetos JSON hacia la API de la capa de persistencia.
 * **Componente de Realismo Motor**: Integra conexión a la **Open Source Routing Machine (OSRM)** para obtener la representación geométrica real (curvas completas) de la Autovía A-43 (Ciudad Real -> Membrilla) y mueve el sensor metro a metro simulando un GPS sobre asfalto además de aplicar fluctuaciones termodinámicas aleatorias simulando el compresor frigorífico.
+* **Soporte Multi-Viaje**: Permite configurar y simular diferentes rutas concurrentemente (ej. Ciudad Real -> Membrilla, Valdepeñas -> Manzanares), asignando un identificador único de viaje (`numero_viaje`) a cada flujo de telemetría.
 
 ### 4. Capa de Visualización (Dashboard Forense UI)
 El frontal visual interactivo desarrollado en HTML5, CSS Variables y Vanilla JS.
 * A diferencia de otros Dashboards estáticos, este funciona mediante **Long-Polling** pasivo contra el servidor, "dibujando" la cadena en vivo sobre la cartografía de `Leaflet.js` y alertando si la temperatura sale de rango (`>8 °C`).
 * Actúa como centro forense ejecutando llamadas REST (`GET /auditar`) que obligan al Core a re-analizar toda la estructura matemática para buscar discrepancias (simulación de fraudes y hackeos).
+* **Filtrado y Auditoría por Viaje**: Incluye un selector dinámico para aislar visualmente las rutas en el mapa y focalizar la auditoría criptográfica en un viaje específico.
 
 ### 5. Herramienta de Auditoría y Simulación de Ataques (Opcional)
 Para facilitar la demostración de la inmutabilidad y la respuesta del sistema frente a modificaciones malintencionadas, se incluye el script `simular_ataque.py`.

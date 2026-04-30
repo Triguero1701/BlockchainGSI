@@ -18,6 +18,7 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS telemetria (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            numero_viaje TEXT NOT NULL,
             id_lote TEXT NOT NULL,
             lat REAL NOT NULL,
             lon REAL NOT NULL,
@@ -29,7 +30,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-def insert_telemetria(id_lote, lat, lon, temperatura, timestamp):
+def insert_telemetria(numero_viaje, id_lote, lat, lon, temperatura, timestamp):
     """
     Inserts raw telemetry off-chain data and returns the primary key ID.
     The block_hash is updated later when the block is mined/created.
@@ -37,9 +38,9 @@ def insert_telemetria(id_lote, lat, lon, temperatura, timestamp):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute('''
-        INSERT INTO telemetria (id_lote, lat, lon, temperatura, timestamp)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (id_lote, lat, lon, temperatura, timestamp))
+        INSERT INTO telemetria (numero_viaje, id_lote, lat, lon, temperatura, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (numero_viaje, id_lote, lat, lon, temperatura, timestamp))
     conn.commit()
     row_id = c.lastrowid
     conn.close()

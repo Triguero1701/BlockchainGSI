@@ -18,6 +18,8 @@ const ROUTE_COLORS = ['#58a6ff', '#2ea043', '#f2cc60', '#bc8cff', '#ff7b72', '#3
 const blocksFeed = document.getElementById("blocksFeed");
 const btnAuditar = document.getElementById("btnAuditar");
 const auditResult = document.getElementById("auditResult");
+const tripSelector = document.getElementById("tripSelector");
+let latestCadena = [];
 
 function startPolling() {
     setInterval(fetchBlockchain, 2000);
@@ -30,7 +32,9 @@ async function fetchBlockchain() {
         const data = await res.json();
         
         if (data.longitud > knownBlocks) {
+            latestCadena = data.cadena;
             renderNewBlocks(data.cadena);
+            populateTripSelector(data.cadena);
             knownBlocks = data.longitud;
         }
     } catch (err) {
@@ -61,6 +65,7 @@ function renderNewBlocks(cadena) {
             let tempColor = p.temperatura > 8 || p.temperatura < 4 ? "warning" : "";
             
             payloadHtml = `
+                <p><span>Viaje:</span> <span class="val" style="color:#58a6ff;">${p.numero_viaje || 'N/A'}</span></p>
                 <p><span>Temp:</span> <span class="val ${tempColor}">${p.temperatura} °C</span></p>
                 <p><span>Lat/Lon:</span> <span class="val">${p.lat}, ${p.lon}</span></p>
                 <p><span>DB ID Off-Chain:</span> <span class="val">${p.db_id}</span></p>
@@ -154,11 +159,49 @@ function renderMapPath(cadena) {
         });
     });
 
-    // Centrar mapa si hay ruta
-    if(ultimoPunto) {
-        map.panTo(ultimoPunto, {animate: true});
+    // El auto-centrado ha sido desactivado (requisito 1)
+}
+
+function populateTripSelector(cadena) {
+    const currentVal = tripSelector.value;
+    const trips = new Set();
+    cadena.forEach(b => {
+        if (b.index > 0 && b.payload && b.payload.numero_viaje) {
+            trips.add(b.payload.numero_viaje);
+        }
+    });
+
+    if (tripSelector.options.length - 1 !== trips.size) {
+        tripSelector.innerHTML = '<option value="ALL">Todos los viajes</option>';
+        Array.from(trips).sort().forEach(trip => {
+            const opt = document.createElement("option");
+            opt.value = trip;
+            opt.innerText = trip;
+            tripSelector.appendChild(opt);
+        });
+        
+        // Mantener seleccion
+        if (Array.from(tripSelector.options).some(o => o.value === currentVal)) {
+            tripSelector.value = currentVal;
+        }
     }
 }
+
+tripSelector.addEventListener('change', () => {
+    const selected = tripSelector.value;
+    let coords = [];
+    latestCadena.forEach(b => {
+        if(b.index > 0 && b.payload && b.payload.lat && b.payload.lon) {
+            if (selected === "ALL" || b.payload.numero_viaje === selected) {
+                coords.push([b.payload.lat, b.payload.lon]);
+            }
+        }
+    });
+    
+    if (coords.length > 0) {
+        map.fitBounds(coords, {padding: [50, 50], animate: true});
+    }
+});
 
 // 2. AUDITAR INTEGRIDAD
 btnAuditar.addEventListener('click', async () => {
@@ -166,7 +209,8 @@ btnAuditar.addEventListener('click', async () => {
     btnAuditar.style.opacity = 0.7;
     
     try {
-        const res = await fetch(`${API_URL}/auditar`);
+        const viajeId = tripSelector.value;
+        const res = await fetch(`${API_URL}/auditar?numero_viaje=${viajeId}`);
         const result = await res.json();
         
         auditResult.className = `alert ${result.integridad ? 'success' : 'error'}`;
