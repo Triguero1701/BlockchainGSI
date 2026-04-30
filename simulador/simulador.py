@@ -71,6 +71,7 @@ def crear_envio(config):
         "lat": current_lat,
         "lon": current_lon,
         "temperatura": round(4.0 + random.uniform(-0.4, 0.6), 2),
+        "finished": False
     }
 
 
@@ -85,13 +86,14 @@ def actualizar_posicion(envio):
         if dist <= STEP_SIZE_DEGREES:
             envio["current_wp_idx"] += 1
             envio["lat"], envio["lon"] = target_lat, target_lon
+            if envio["current_wp_idx"] == len(waypoints) - 1:
+                envio["finished"] = True
         elif dist > 0:
             ratio = STEP_SIZE_DEGREES / dist
             envio["lat"] += (target_lat - envio["lat"]) * ratio
             envio["lon"] += (target_lon - envio["lon"]) * ratio
     else:
-        envio["lat"] += random.uniform(-0.0001, 0.0001)
-        envio["lon"] += random.uniform(-0.0001, 0.0001)
+        envio["finished"] = True
 
 
 def actualizar_temperatura(envio):
@@ -137,7 +139,12 @@ envios = [crear_envio(config) for config in RUTAS]
 while True:
     timestamp = datetime.datetime.now().isoformat()
 
+    todos_terminados = True
     for envio in envios:
+        if envio.get("finished", False):
+            continue
+
+        todos_terminados = False
         actualizar_posicion(envio)
         actualizar_temperatura(envio)
         payload = construir_payload(envio, timestamp)
@@ -149,5 +156,9 @@ while True:
         )
 
         enviar_payload(payload)
+
+    if todos_terminados:
+        print("🛑 Todos los viajes han finalizado. Deteniendo simulación.")
+        break
 
     time.sleep(TICK_SECONDS)

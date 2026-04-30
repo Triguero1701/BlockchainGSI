@@ -86,6 +86,15 @@ function renderNewBlocks(cadena) {
                 ${payloadHtml}
             </div>
         `;
+        
+        if (!isGenesis) {
+            el.style.cursor = 'pointer';
+            el.title = "Haz clic para centrar en el mapa";
+            el.addEventListener('click', () => {
+                map.flyTo([bloque.payload.lat, bloque.payload.lon], 15, { animate: true });
+            });
+        }
+        
         blocksFeed.appendChild(el);
     }
     

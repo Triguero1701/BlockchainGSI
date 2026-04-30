@@ -20,12 +20,12 @@ def simular_ataque():
     c = conn.cursor()
 
     # Buscar un registro preferiblemente con temperatura fuera de rango (ej. > 7) para ocultar el fraude
-    c.execute('SELECT id, lat, lon, temperatura FROM telemetria WHERE temperatura > 7 LIMIT 1')
+    c.execute('SELECT id, numero_viaje, id_lote, lat, lon, temperatura FROM telemetria WHERE temperatura > 7 LIMIT 1')
     row = c.fetchone()
 
     # Si no hay ninguno > 7, coger el último
     if not row:
-        c.execute('SELECT id, lat, lon, temperatura FROM telemetria ORDER BY id DESC LIMIT 1')
+        c.execute('SELECT id, numero_viaje, id_lote, lat, lon, temperatura FROM telemetria ORDER BY id DESC LIMIT 1')
         row = c.fetchone()
 
     if not row:
@@ -33,12 +33,14 @@ def simular_ataque():
         conn.close()
         return
 
-    record_id, lat, lon, temp_original = row
+    record_id, numero_viaje, id_lote, lat, lon, temp_original = row
     
     # Supongamos que la temperatura legal es 4.5
     temp_falsa = 4.5
 
     print(f"[*] Objetivo localizado -> ID: {record_id}")
+    print(f"    - Viaje:       {numero_viaje}")
+    print(f"    - Lote:        {id_lote}")
     print(f"    - Latitud:     {lat}")
     print(f"    - Longitud:    {lon}")
     print(f"    - Temp real:   {temp_original} °C")
