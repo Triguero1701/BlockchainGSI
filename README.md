@@ -6,8 +6,26 @@ Prueba de Concepto (PoC) sobre la validación de integridad inmutable en sistema
 * **Python 3.9+** instalado en el sistema.
 * Un navegador moderno (Chrome, Firefox, Safari).
 * Conexión a internet (para descargar los mapas de Leaflet y contactar a OSRM para trazar las carreteras).
+* *(Opcional)* **Docker** y **Docker Compose** si prefieres la ejecución automatizada mediante contenedores.
 
-## 🛠 Instalación y Configuración
+---
+
+## 🐳 Instalación y Ejecución con Docker (Recomendado)
+
+Si tienes Docker instalado en tu sistema, puedes levantar toda la infraestructura (backend, frontend y simulador) con un solo comando:
+
+1. Abre una terminal en la raíz del proyecto.
+2. Ejecuta el siguiente comando:
+```bash
+docker-compose up --build
+```
+3. Abre tu navegador y accede a: [http://localhost](http://localhost)
+
+*(El simulador arrancará automáticamente y empezarás a ver la ruta del camión en tiempo real).*
+
+---
+
+## 🛠 Instalación y Configuración (Modo Local)
 
 Sigue estos 3 pasos básicos desde la terminal abierta en la raíz de este proyecto:
 
@@ -33,7 +51,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Cómo arrancar la Demostración
+## 🚀 Cómo arrancar la Demostración (Modo Local)
 
 La PoC se compone de elementos desconectados que hay que encender simultáneamente. Necesitarás tener tu pantalla compartida o abierta con al menos dos consolas y el navegador.
 
