@@ -3,8 +3,9 @@ import random
 import requests
 import datetime
 import math
+import os
 
-API_URL = "http://127.0.0.1:5000/sensor"
+API_URL = os.environ.get("API_URL", "http://127.0.0.1:5000/sensor")
 
 RUTAS = [
     {
