@@ -1,8 +1,8 @@
 import sqlite3
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FILE = os.path.join(BASE_DIR, "trazabilidad.db")
+DB_DIR = os.environ.get("DB_DIR", os.path.dirname(os.path.abspath(__file__)))
+DB_FILE = os.path.join(DB_DIR, "trazabilidad.db")
 
 def get_db_connection():
     # Helper for db connection
@@ -11,10 +11,9 @@ def get_db_connection():
     return conn
 
 def init_db():
-    # Initializes the telemetry table from scratch
+    # Initializes the telemetry table (creates if it doesn't exist)
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('DROP TABLE IF EXISTS telemetria')
     c.execute('''
         CREATE TABLE IF NOT EXISTS telemetria (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
