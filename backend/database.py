@@ -11,9 +11,10 @@ def get_db_connection():
     return conn
 
 def init_db():
-    # Initializes the telemetry table (creates if it doesn't exist)
+    # Initializes the telemetry table (drops existing to sync with in-memory blockchain)
     conn = get_db_connection()
     c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS telemetria')
     c.execute('''
         CREATE TABLE IF NOT EXISTS telemetria (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

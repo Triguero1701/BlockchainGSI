@@ -10,7 +10,7 @@ services:
     environment:
       - DB_DIR=/data
     volumes:
-      - backend_data:/data
+      - ./backend:/data
 
   frontend:
     build:
@@ -30,5 +30,3 @@ services:
     depends_on:
       - backend
 
-volumes:
-  backend_data:

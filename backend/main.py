@@ -16,6 +16,21 @@ init_db()
 # 2. In-memory persistente blockchain
 mi_blockchain = Blockchain()
 
+rutas_pendientes = []
+
+@app.route('/viaje', methods=['POST'])
+def agregar_viaje():
+    datos = request.get_json()
+    rutas_pendientes.append(datos)
+    return jsonify({"status": "success"})
+
+@app.route('/rutas_pendientes', methods=['GET'])
+def obtener_rutas():
+    global rutas_pendientes
+    rutas = rutas_pendientes
+    rutas_pendientes = []
+    return jsonify(rutas)
+
 
 @app.route('/sensor', methods=['POST'])
 def recibir_sensor():

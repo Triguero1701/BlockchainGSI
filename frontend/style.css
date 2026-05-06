@@ -115,6 +115,27 @@ body {
     box-shadow: 0 0 15px rgba(88, 166, 255, 0.5);
 }
 
+.btn.secondary {
+    background-color: transparent;
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+}
+
+.btn.secondary:hover {
+    background-color: rgba(88, 166, 255, 0.1);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.map-selecting {
+    cursor: crosshair !important;
+}
+
 .alert {
     margin-top: 16px;
     padding: 14px;

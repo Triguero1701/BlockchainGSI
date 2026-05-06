@@ -140,6 +140,17 @@ envios = [crear_envio(config) for config in RUTAS]
 while True:
     timestamp = datetime.datetime.now().isoformat()
 
+    try:
+        url_rutas = API_URL.replace("/sensor", "/rutas_pendientes")
+        res = requests.get(url_rutas, timeout=2)
+        if res.status_code == 200:
+            nuevas = res.json()
+            for r in nuevas:
+                print(f"🌟 Nuevo viaje recibido dinámicamente: {r['numero_viaje']}")
+                envios.append(crear_envio(r))
+    except Exception:
+        pass
+
     todos_terminados = True
     for envio in envios:
         if envio.get("finished", False):
@@ -158,8 +169,7 @@ while True:
 
         enviar_payload(payload)
 
-    if todos_terminados:
-        print("🛑 Todos los viajes han finalizado. Deteniendo simulación.")
-        break
+    # Quitamos la terminación del simulador para que se quede esperando nuevas rutas
+    pass
 
     time.sleep(TICK_SECONDS)

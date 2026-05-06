@@ -19,7 +19,14 @@ const blocksFeed = document.getElementById("blocksFeed");
 const btnAuditar = document.getElementById("btnAuditar");
 const auditResult = document.getElementById("auditResult");
 const tripSelector = document.getElementById("tripSelector");
+const btnAddTrip = document.getElementById("btnAddTrip");
+const tripInstructions = document.getElementById("tripInstructions");
 let latestCadena = [];
+
+let isSelectingTrip = false;
+let tripStart = null;
+let tempMarkers = [];
+
 
 function startPolling() {
     setInterval(fetchBlockchain, 2000);
@@ -243,3 +250,81 @@ btnAuditar.addEventListener('click', async () => {
 // Iniciamos app
 fetchBlockchain();
 startPolling();
+
+// 3. AÑADIR VIAJE INTERACTIVO
+btnAddTrip.addEventListener("click", () => {
+    isSelectingTrip = true;
+    tripStart = null;
+    tempMarkers.forEach(m => map.removeLayer(m));
+    tempMarkers = [];
+    document.getElementById("map").classList.add("map-selecting");
+    tripInstructions.innerHTML = "Haz clic en el mapa para el <b>punto de inicio</b>.";
+    tripInstructions.classList.remove("hidden");
+    btnAddTrip.disabled = true;
+});
+
+map.on('click', async function(e) {
+    if (!isSelectingTrip) return;
+    
+    const latlng = e.latlng;
+    
+    if (!tripStart) {
+        tripStart = [latlng.lat, latlng.lng];
+        let marker = L.circleMarker(tripStart, {
+            radius: 8, fillColor: "#f2cc60", color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+        }).addTo(map);
+        tempMarkers.push(marker);
+        tripInstructions.innerHTML = "Ahora selecciona el <b>punto de destino</b> en el mapa.";
+    } else {
+        const tripEnd = [latlng.lat, latlng.lng];
+        let marker = L.circleMarker(tripEnd, {
+            radius: 8, fillColor: "#f2cc60", color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+        }).addTo(map);
+        tempMarkers.push(marker);
+        
+        tripInstructions.innerHTML = "Enviando solicitud de viaje...";
+        document.getElementById("map").classList.remove("map-selecting");
+        
+        let maxViaje = 0;
+        latestCadena.forEach(b => {
+            if (b.index > 0 && b.payload && b.payload.numero_viaje) {
+                let match = b.payload.numero_viaje.match(/VIAJE-(\d+)/);
+                if (match) {
+                    let num = parseInt(match[1]);
+                    if (num > maxViaje) maxViaje = num;
+                }
+            }
+        });
+        const nextNum = maxViaje + 1;
+        const numViajeStr = nextNum.toString().padStart(3, '0');
+        
+        const numViaje = "VIAJE-" + numViajeStr;
+        const idLote = "QUESO_MANCHEGO_" + numViajeStr;
+        
+        try {
+            await fetch(`${API_URL}/viaje`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    numero_viaje: numViaje,
+                    id_lote: idLote,
+                    start: tripStart,
+                    end: tripEnd
+                })
+            });
+            tripInstructions.innerHTML = "¡Viaje añadido a la simulación!";
+        } catch (err) {
+            tripInstructions.innerHTML = "Error al contactar con el backend.";
+            console.error(err);
+        }
+        
+        setTimeout(() => {
+            tripInstructions.classList.add("hidden");
+            btnAddTrip.disabled = false;
+            isSelectingTrip = false;
+            tripStart = null;
+            tempMarkers.forEach(m => map.removeLayer(m));
+            tempMarkers = [];
+        }, 3000);
+    }
+});
